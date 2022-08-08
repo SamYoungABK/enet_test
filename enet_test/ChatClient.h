@@ -29,6 +29,7 @@ class ChatClient
 	
 	void SendJoinPacket();
 	void SendMessagePacket(string message);
+	void SendWhoPacket();
 
 	void ParsePacket(ENetPacket* p);
 	void HandleMessagePacket(ENetPacket* p);

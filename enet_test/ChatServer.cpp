@@ -1,8 +1,11 @@
 #include "ChatServer.h"
 #include <enet/enet.h>
 #include <iostream>
+#include <string>
+#include <vector>
 
-using std::cout; using std::endl;
+using std::cout;   using std::endl;
+using std::string; using std::vector;
 
 void ChatServer::CreateServer()
 {
@@ -52,6 +55,7 @@ void ChatServer::ParsePacket(ENetEvent* e)
 	{
 	case 'j': HandleJoinPacket(e); break;
 	case 'm': HandleMessagePacket(e); break;
+	case 'w': HandleWhoPacket(e); break;
 	}
 }
 
@@ -59,13 +63,27 @@ void ChatServer::HandleMessagePacket(ENetEvent* e)
 {
 	cout << "Received message: " << e->packet->data + 1 << endl;
 	enet_host_broadcast(server, 0, e->packet);
-	e->peer->data = e->packet->data + 1;
 }
 
 void ChatServer::HandleJoinPacket(ENetEvent* e)
 {
 	cout << "User joined: " << e->packet->data + 1 << endl;
+	connectedUsers.push_back((char*)(e->packet->data + 1));
 	enet_host_broadcast(server, 0, e->packet);
+}
+
+void ChatServer::HandleWhoPacket(ENetEvent* e)
+{
+	cout << "User list requested" << endl;
+	string response = "mConnected users: ";
+	
+	for (string user : connectedUsers) response += (user + ' ');
+
+	ENetPacket* packet = enet_packet_create(response.c_str(),
+		strlen(response.c_str()) + 1,
+		ENET_PACKET_FLAG_RELIABLE);
+
+	enet_peer_send((e->peer), 0, packet);
 }
 
 void ChatServer::HandleDisconnect(ENetEvent* e)

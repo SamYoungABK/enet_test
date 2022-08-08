@@ -40,8 +40,13 @@ void ChatClient::KbListen()
 	{
 		string message;
 		getline(cin, message);
-
-		SendMessagePacket(message);
+		// TODO: Refactor into ParseCommand()
+		if (message == "/who")
+		{
+			SendWhoPacket();
+		}
+		if(message[0] != '/')
+			SendMessagePacket(message);
 	}
 }
 
@@ -130,6 +135,15 @@ void ChatClient::HandleMessagePacket(ENetPacket* p)
 void ChatClient::HandleJoinPacket(ENetPacket* p)
 {
 	chatLog.push_back("User joined: " + string((char*)p->data + 1));
+}
+
+void ChatClient::SendWhoPacket()
+{
+	ENetPacket* packet = enet_packet_create("w",
+		strlen("w") + 1,
+		ENET_PACKET_FLAG_RELIABLE);
+
+	enet_peer_send(server, 0, packet);
 }
 
 void ChatClient::ClientLoop()

@@ -1,12 +1,16 @@
+#pragma once
 #include <enet/enet.h>
 #include <string>
+#include <vector>
 
-#pragma once
+using std::vector; using std::string;
+
 class ChatServer
 {
 
 	ENetAddress address;
 	ENetHost* server;
+	vector<string> connectedUsers;
 
 	void CreateServer();
 	void HandleConnection(ENetEvent e);
@@ -15,8 +19,10 @@ class ChatServer
 	void ParsePacket(ENetEvent* e);
 	void HandleMessagePacket(ENetEvent* e);
 	void HandleJoinPacket(ENetEvent* e);
+	void HandleWhoPacket(ENetEvent* e);
 
 	void HandleDisconnect(ENetEvent* e);
+
 
 public:
 	void RunServer();

@@ -33,6 +33,8 @@ void ChatClient::DrawScreen()
 	}
 }
 
+
+
 void ChatClient::KbListen()
 {
 	bool listening = true;
@@ -40,13 +42,10 @@ void ChatClient::KbListen()
 	{
 		string message;
 		getline(cin, message);
-		// TODO: Refactor into ParseCommand()
-		if (message == "/who")
-		{
-			SendWhoPacket();
-		}
-		if(message[0] != '/')
-			SendMessagePacket(message);
+
+		if (message[0] == '/') ParseCommand(message);
+		else SendMessagePacket(message);
+			
 	}
 }
 
@@ -144,6 +143,14 @@ void ChatClient::SendWhoPacket()
 		ENET_PACKET_FLAG_RELIABLE);
 
 	enet_peer_send(server, 0, packet);
+}
+
+void ChatClient::ParseCommand(string message)
+{
+	if (message == "/who")
+	{
+		SendWhoPacket();
+	}
 }
 
 void ChatClient::ClientLoop()

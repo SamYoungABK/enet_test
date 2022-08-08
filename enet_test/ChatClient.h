@@ -35,6 +35,8 @@ class ChatClient
 	void HandleMessagePacket(ENetPacket* p);
 	void HandleJoinPacket(ENetPacket* p);
 
+	void ParseCommand(string message);
+
 	void ClientLoop();
 public:
 	void RunClient();

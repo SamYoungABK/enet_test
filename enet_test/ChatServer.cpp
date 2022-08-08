@@ -17,8 +17,8 @@ void ChatServer::CreateServer()
 
 void ChatServer::HandleConnection(ENetEvent e)
 {
-	cout << "A new client connected from" <<
-		e.peer->address.host << ':' << e.peer->address.port;
+	cout << "A new client connected from " <<
+		e.peer->address.host << ':' << e.peer->address.port << endl << endl;
 }
 
 void ChatServer::ServerLoop()
@@ -57,14 +57,14 @@ void ChatServer::ParsePacket(ENetEvent* e)
 
 void ChatServer::HandleMessagePacket(ENetEvent* e)
 {
-	cout << "User joined: " << e->packet->data + 1 << endl;
+	cout << "Received message: " << e->packet->data + 1 << endl;
 	enet_host_broadcast(server, 0, e->packet);
 	e->peer->data = e->packet->data + 1;
 }
 
 void ChatServer::HandleJoinPacket(ENetEvent* e)
 {
-	cout << "Received message: " << e->packet->data + 1 << endl;
+	cout << "User joined: " << e->packet->data + 1 << endl;
 	enet_host_broadcast(server, 0, e->packet);
 }
 

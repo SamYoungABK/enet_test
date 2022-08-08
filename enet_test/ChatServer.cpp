@@ -77,7 +77,13 @@ void ChatServer::HandleWhoPacket(ENetEvent* e)
 	cout << "User list requested" << endl;
 	string response = "mConnected users: ";
 	
-	for (string user : connectedUsers) response += (user + ' ');
+	for (string user : connectedUsers)
+	{
+		response += (user);
+		
+		if (user != connectedUsers.back())
+			response += ", ";
+	}
 
 	ENetPacket* packet = enet_packet_create(response.c_str(),
 		strlen(response.c_str()) + 1,

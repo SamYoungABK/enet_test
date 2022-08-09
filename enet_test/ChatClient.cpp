@@ -4,6 +4,8 @@
 #include <enet/enet.h>
 #include <iostream>
 #include <thread>
+#include <sstream>
+#include <iomanip>
 
 using std::cout;   using std::endl;
 using std::string; using std::vector;
@@ -161,11 +163,49 @@ void ChatClient::SendWhoPacket()
 	enet_peer_send(server, 0, packet);
 }
 
+// packet structure
+//   opCode(char) + receiverNameSize(char) + '\0' + receiverName(char*[receiverNameSize]) + '\0'
+//    + whisperMsg (char*[until '\0'] + '\0'
+// TODO: Probably refactor this? 
+
+void ChatClient::SendWhisperPacket(string receiver, string whisperMsg)
+{
+	int size = 1 + 1 + strlen(receiver.c_str()) + strlen(whisperMsg.c_str()) + 1 + 1;
+	char* data = new char[size];
+	char* dataInsert = data;
+	*dataInsert = 'W'; dataInsert++;
+	*dataInsert = strlen(receiver.c_str()); dataInsert++;
+	strcpy_s(dataInsert, (data+size)-dataInsert, receiver.c_str()); dataInsert += strlen(receiver.c_str());
+	strcpy_s(dataInsert, (data + size) - dataInsert, whisperMsg.c_str()); dataInsert += strlen(whisperMsg.c_str());
+	*dataInsert = '\0';
+
+	ENetPacket* packet = enet_packet_create(data,
+		size + 1,
+		ENET_PACKET_FLAG_RELIABLE);
+
+	enet_peer_send(server, 0, packet);
+}
+
 void ChatClient::ParseCommand(string message)
 {
-	if (message == "/who")
+	std::istringstream messageStream(message);
+	string command;
+	messageStream >> command;
+
+	if (command == "/who")
 	{
 		SendWhoPacket();
+		return;
+	}
+	if (command == "/whisper" || command == "/msg")
+	{
+		char ch;
+		string receiverName;
+		string whisperMsg;
+		messageStream >> std::quoted(receiverName);
+
+		getline(messageStream, whisperMsg);
+		SendWhisperPacket(receiverName, whisperMsg);
 	}
 }
 

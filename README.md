@@ -6,6 +6,4 @@ Clients can pick a name, and messages they input will be sent to all clients con
 
 ## Chat Commands
 /who - Gets a list of connected users on the server
-
-## To-Do List
-* Disconnect users automatically after a certain timeout
+/whisper "[user]" [message]

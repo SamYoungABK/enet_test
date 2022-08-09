@@ -22,9 +22,11 @@ class ChatServer
 	void HandleMessagePacket(ENetEvent* e);
 	void HandleJoinPacket(ENetEvent* e);
 	void HandleWhoPacket(ENetEvent* e);
+	void HandleWhisperPacket(ENetEvent* e);
 
 	void HandleDisconnect(ENetEvent* e);
 
+	vector<User>::iterator GetUserFromName(string name);
 	vector<User>::iterator GetUserFromPeer(ENetPeer* p);
 	bool IsNameTaken(string name);
 public:

@@ -58,6 +58,7 @@ void ChatServer::ParsePacket(ENetEvent* e)
 	case 'j': HandleJoinPacket(e); break;
 	case 'm': HandleMessagePacket(e); break;
 	case 'w': HandleWhoPacket(e); break;
+	case 'W': HandleWhisperPacket(e); break;
 	}
 }
 
@@ -74,6 +75,7 @@ void ChatServer::HandleJoinPacket(ENetEvent* e)
 	if (IsNameTaken(userName))
 	{
 		cout << "Duplicate name tried to join: " << userName;
+
 		ENetPacket* nameTakenPacket = enet_packet_create("jNameTaken",
 			strlen("jNameTaken") + 1,
 			ENET_PACKET_FLAG_RELIABLE);
@@ -85,11 +87,13 @@ void ChatServer::HandleJoinPacket(ENetEvent* e)
 			strlen("jNameAccepted") + 1,
 			ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send((e->peer), 0, nameAcceptedPacket);
+
 		cout << "User joined: " << userName << endl;
 		User newUser(e->peer, userName);
 		connectedUsers.push_back(newUser);
 
 		string userJoinMessage = "mUser joined: " + userName;
+
 		ENetPacket* joinMessagePacket = enet_packet_create(userJoinMessage.c_str(),
 			strlen(userJoinMessage.c_str()) + 1,
 			ENET_PACKET_FLAG_RELIABLE);
@@ -117,6 +121,44 @@ void ChatServer::HandleWhoPacket(ENetEvent* e)
 	enet_peer_send((e->peer), 0, packet);
 }
 
+// TODO: Needs refactoring
+void ChatServer::HandleWhisperPacket(ENetEvent* e)
+{
+	User sender = *(GetUserFromPeer(e->peer));
+	char receiverNameSize;
+	char* tmp;
+	string receiverName;
+	string message;
+	User receiver;
+	string response;
+	
+	receiverNameSize = *((char*)(e->packet->data) + 1);
+	tmp = new char[receiverNameSize+1];
+	strncpy_s(tmp, receiverNameSize + 1, (char*)(e->packet->data + 2), receiverNameSize);
+	tmp[receiverNameSize] = '\0';
+	receiverName = tmp;
+	message = (char*)(e->packet->data + 2 + receiverNameSize);
+	if (!IsNameTaken(receiverName))
+	{
+		response = "mUser not found: " + receiverName;
+		ENetPacket* packet = enet_packet_create(response.c_str(),
+			strlen(response.c_str()) + 1,
+			ENET_PACKET_FLAG_RELIABLE);
+
+		enet_peer_send((e->peer), 0, packet);
+		return;
+	}
+	receiver = *(GetUserFromName(receiverName));
+	response = "m[" + sender.GetName() + "->" + receiver.GetName() + "]: " + message;
+	
+	ENetPacket* packet = enet_packet_create(response.c_str(),
+		strlen(response.c_str()) + 1,
+		ENET_PACKET_FLAG_RELIABLE);
+
+	enet_peer_send((e->peer), 0, packet);
+	enet_peer_send((receiver.GetPeer()), 0, packet);
+}
+
 void ChatServer::HandleDisconnect(ENetEvent* e)
 {
 	vector<User>::iterator disconnectingUser = GetUserFromPeer(e->peer);
@@ -124,11 +166,20 @@ void ChatServer::HandleDisconnect(ENetEvent* e)
 	connectedUsers.erase(disconnectingUser);
 }
 
+vector<User>::iterator ChatServer::GetUserFromName(string name)
+{
+	for (vector<User>::iterator it = connectedUsers.begin(); it < connectedUsers.end(); it++)
+		if (it->GetName() == name)
+			return it;
+	return connectedUsers.end();
+}
+
 vector<User>::iterator ChatServer::GetUserFromPeer(ENetPeer* p)
 {
 	for (vector<User>::iterator it=connectedUsers.begin(); it < connectedUsers.end(); it++)
 		if (it->GetPeer() == p)
 			return it;
+	return connectedUsers.end();
 }
 
 bool ChatServer::IsNameTaken(string name)

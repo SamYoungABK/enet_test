@@ -14,7 +14,10 @@ int main()
 	ChatClient* c = nullptr;
 	ChatServer* s = nullptr;
 
-	cout << "Server or client?" << endl << "1. server " << endl << "2. client" << endl;
+	cout << "Server or client?" << endl <<
+		"1. server " << endl <<
+		"2. client" << endl <<
+		"Selection (1,2,3): ";
 	getline(cin, userInput);
 	int num = int(userInput[0]-'0');
 

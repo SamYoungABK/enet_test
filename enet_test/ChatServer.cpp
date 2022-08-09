@@ -65,11 +65,33 @@ void ChatServer::HandleMessagePacket(ENetEvent* e)
 	enet_host_broadcast(server, 0, e->packet);
 }
 
+// TODO: Needs Refactoring
 void ChatServer::HandleJoinPacket(ENetEvent* e)
 {
-	cout << "User joined: " << e->packet->data + 1 << endl;
-	connectedUsers.push_back((char*)(e->packet->data + 1));
-	enet_host_broadcast(server, 0, e->packet);
+	string userName = (char*)(e->packet->data + 1);
+	if (IsNameTaken(userName))
+	{
+		cout << "Duplicate name tried to join: " << userName;
+		ENetPacket* nameTakenPacket = enet_packet_create("jNameTaken",
+			strlen("jNameTaken") + 1,
+			ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send((e->peer), 0, nameTakenPacket);
+	}
+	else
+	{
+		ENetPacket* nameAcceptedPacket = enet_packet_create("jNameAccepted",
+			strlen("jNameAccepted") + 1,
+			ENET_PACKET_FLAG_RELIABLE);
+		enet_peer_send((e->peer), 0, nameAcceptedPacket);
+		cout << "User joined: " << userName << endl;
+		connectedUsers.push_back(userName);
+
+		string userJoinMessage = "User joined: " + userName;
+		ENetPacket* joinMessagePacket = enet_packet_create(userJoinMessage.c_str(),
+			strlen(userJoinMessage.c_str()) + 1,
+			ENET_PACKET_FLAG_RELIABLE);
+		enet_host_broadcast(server, 0, joinMessagePacket);
+	}
 }
 
 void ChatServer::HandleWhoPacket(ENetEvent* e)
@@ -96,6 +118,11 @@ void ChatServer::HandleDisconnect(ENetEvent* e)
 {
 	cout << (char*)(e->peer->data) << " disconnected. " << endl;
 	e->peer->data = NULL;
+}
+
+bool ChatServer::IsNameTaken(string name)
+{
+	return std::find(connectedUsers.begin(), connectedUsers.end(), name)!= connectedUsers.end();
 }
 
 void ChatServer::RunServer()

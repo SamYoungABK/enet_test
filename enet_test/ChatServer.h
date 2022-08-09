@@ -23,7 +23,7 @@ class ChatServer
 
 	void HandleDisconnect(ENetEvent* e);
 
-
+	bool IsNameTaken(string name);
 public:
 	void RunServer();
 	void SetAddress(ENetAddress addr) { address = addr; }

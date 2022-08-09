@@ -45,7 +45,7 @@ void ChatClient::KbListen()
 
 		if (message[0] == '/') ParseCommand(message);
 		else SendMessagePacket(message);
-			
+
 	}
 }
 
@@ -99,7 +99,16 @@ void ChatClient::SendJoinPacket()
 		strlen(dataToSend.c_str()) + 1,
 		ENET_PACKET_FLAG_RELIABLE);
 
+	ENetEvent event;
 	enet_peer_send(server, 0, packet);
+	enet_host_service(client, &event, 1000);
+	switch (event.type)
+	{
+	case ENET_EVENT_TYPE_RECEIVE:
+		ParsePacket(event.packet);
+	}
+
+	
 }
 
 void ChatClient::SendMessagePacket(string message)
@@ -133,6 +142,18 @@ void ChatClient::HandleMessagePacket(ENetPacket* p)
 
 void ChatClient::HandleJoinPacket(ENetPacket* p)
 {
+	string response = (char*)(p->data + 1);
+	if (response == "NameTaken")
+	{
+		system("cls");
+		std::cout << "Name has already been taken. Try a different one." << std::endl;
+		system("pause");
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+
+	}
 	chatLog.push_back("User joined: " + string((char*)p->data + 1));
 }
 

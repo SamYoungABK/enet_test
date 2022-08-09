@@ -110,7 +110,7 @@ void ChatClient::SendJoinPacket()
 		ParsePacket(event.packet);
 	}
 
-	
+
 }
 
 void ChatClient::SendMessagePacket(string message)
@@ -175,7 +175,7 @@ void ChatClient::SendWhisperPacket(string receiver, string whisperMsg)
 	char* dataInsert = data;
 	*dataInsert = 'W'; dataInsert++;
 	*dataInsert = strlen(receiver.c_str()); dataInsert++;
-	strcpy_s(dataInsert, (data+size)-dataInsert, receiver.c_str()); dataInsert += strlen(receiver.c_str());
+	strcpy_s(dataInsert, (data + size) - dataInsert, receiver.c_str()); dataInsert += strlen(receiver.c_str());
 	strcpy_s(dataInsert, (data + size) - dataInsert, whisperMsg.c_str()); dataInsert += strlen(whisperMsg.c_str());
 	*dataInsert = '\0';
 
@@ -203,7 +203,6 @@ void ChatClient::ParseCommand(string message)
 		string receiverName;
 		string whisperMsg;
 		messageStream >> std::quoted(receiverName);
-
 		getline(messageStream, whisperMsg);
 		SendWhisperPacket(receiverName, whisperMsg);
 	}
@@ -220,6 +219,12 @@ void ChatClient::ClientLoop()
 		{
 		case ENET_EVENT_TYPE_RECEIVE:
 			ParsePacket(event.packet);
+			break;
+		case ENET_EVENT_TYPE_DISCONNECT:
+			connected = false;
+			break;
+		default:
+			break;
 		}
 	}
 }

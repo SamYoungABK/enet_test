@@ -15,7 +15,7 @@ void ChatClient::DrawScreen()
 {
 	int chatLogSize = 0;
 	bool drawing = true;
-	
+
 	while (drawing)
 	{
 		if (chatLogSize != chatLog.size())
@@ -162,27 +162,31 @@ void ChatClient::SendWhoPacket()
 	enet_peer_send(server, 0, packet);
 }
 
-// packet structure
-//   opCode(char) + receiverNameSize(char) + receiverName(char*[receiverNameSize]) + '\0'
-//    + whisperMsg (char*[until '\0'] + '\0'
-// TODO: Probably refactor this? 
-
-void ChatClient::SendWhisperPacket(string receiver, string whisperMsg)
+void ChatClient::SendWhisperPacket(const char* receiver, const char* whisperMsg)
 {
-	int size = 1 + 1 + strlen(receiver.c_str()) + strlen(whisperMsg.c_str()) + 1 + 1;
-	char* data = new char[size];
-	char* dataInsert = data;
+	int packetSize = sizeof('W') + sizeof(strlen(receiver)) + strlen(receiver) + strlen(whisperMsg) + '\0';
+	char* packetData = new char[packetSize];
+	char* packetDataInserter = packetData;
+	char* endOfPacketSize = (packetData + packetSize);
+	int bufSize = 0;
 
-	*dataInsert = 'W'; dataInsert++;
-	*dataInsert = strlen(receiver.c_str()); dataInsert++;
-	strcpy_s(dataInsert, (data + size) - dataInsert, receiver.c_str()); dataInsert += strlen(receiver.c_str());
-	strcpy_s(dataInsert, (data + size) - dataInsert, whisperMsg.c_str()); dataInsert += strlen(whisperMsg.c_str());
-	*dataInsert = '\0';
+	*packetDataInserter = 'W';
+	packetDataInserter++;
 
-	ENetPacket* packet = enet_packet_create(data,
-		size + 1,
-		ENET_PACKET_FLAG_RELIABLE);
+	*packetDataInserter = strlen(receiver);
+	packetDataInserter++;
 
+	bufSize = endOfPacketSize - strlen(whisperMsg) - packetDataInserter;
+	strcpy_s(packetDataInserter, bufSize, receiver);
+	packetDataInserter += strlen(receiver);
+
+	bufSize = endOfPacketSize - packetDataInserter;
+	strcpy_s(packetDataInserter, endOfPacketSize - packetDataInserter, whisperMsg);
+	packetDataInserter += strlen(whisperMsg);
+
+	*packetDataInserter = '\0';
+
+	ENetPacket* packet = enet_packet_create(packetData, packetSize, ENET_PACKET_FLAG_RELIABLE);
 	enet_peer_send(server, 0, packet);
 }
 
@@ -199,12 +203,12 @@ void ChatClient::ParseCommand(string message)
 	}
 	if (command == "/whisper" || command == "/msg")
 	{
-		char ch;
 		string receiverName;
 		string whisperMsg;
+
 		messageStream >> std::quoted(receiverName);
 		getline(messageStream, whisperMsg);
-		SendWhisperPacket(receiverName, whisperMsg);
+		SendWhisperPacket((receiverName.c_str()), (whisperMsg.c_str()));
 	}
 }
 

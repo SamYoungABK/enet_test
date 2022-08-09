@@ -9,7 +9,7 @@ using std::string; using std::vector;
 
 void ChatServer::CreateServer()
 {
-	server = enet_host_create(&address, 2, 2, 0, 0);
+	server = enet_host_create(&address, 10, 2, 0, 0);
 
 	if (server == NULL)
 	{

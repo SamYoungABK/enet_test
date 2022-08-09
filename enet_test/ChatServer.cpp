@@ -86,7 +86,7 @@ void ChatServer::HandleJoinPacket(ENetEvent* e)
 		cout << "User joined: " << userName << endl;
 		connectedUsers.push_back(userName);
 
-		string userJoinMessage = "User joined: " + userName;
+		string userJoinMessage = "mUser joined: " + userName;
 		ENetPacket* joinMessagePacket = enet_packet_create(userJoinMessage.c_str(),
 			strlen(userJoinMessage.c_str()) + 1,
 			ENET_PACKET_FLAG_RELIABLE);

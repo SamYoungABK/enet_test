@@ -150,11 +150,6 @@ void ChatClient::HandleJoinPacket(ENetPacket* p)
 		system("pause");
 		exit(EXIT_FAILURE);
 	}
-	else
-	{
-
-	}
-	chatLog.push_back("User joined: " + string((char*)p->data + 1));
 }
 
 void ChatClient::SendWhoPacket()

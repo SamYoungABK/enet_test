@@ -2,6 +2,8 @@
 #include <enet/enet.h>
 #include <string>
 #include <vector>
+#include "User.h"
+
 
 using std::vector; using std::string;
 
@@ -10,7 +12,7 @@ class ChatServer
 
 	ENetAddress address;
 	ENetHost* server;
-	vector<string> connectedUsers;
+	vector<User> connectedUsers;
 
 	void CreateServer();
 	void HandleConnection(ENetEvent e);
@@ -23,6 +25,7 @@ class ChatServer
 
 	void HandleDisconnect(ENetEvent* e);
 
+	vector<User>::iterator GetUserFromPeer(ENetPeer* p);
 	bool IsNameTaken(string name);
 public:
 	void RunServer();

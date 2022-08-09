@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="ChatClient.h" />
     <ClInclude Include="ChatServer.h" />
+    <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

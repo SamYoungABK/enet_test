@@ -22,6 +22,8 @@ void ChatServer::HandleConnection(ENetEvent e)
 {
 	cout << "A new client connected from " <<
 		e.peer->address.host << ':' << e.peer->address.port << endl << endl;
+	
+	enet_peer_timeout(e.peer, 1000, 1000, 1500);
 }
 
 void ChatServer::ServerLoop()
@@ -30,7 +32,7 @@ void ChatServer::ServerLoop()
 	while (hosting)
 	{
 		ENetEvent event;
-		while (enet_host_service(server, &event, 100000))
+		while (enet_host_service(server, &event, 1000))
 		{
 			switch (event.type)
 			{
@@ -84,7 +86,8 @@ void ChatServer::HandleJoinPacket(ENetEvent* e)
 			ENET_PACKET_FLAG_RELIABLE);
 		enet_peer_send((e->peer), 0, nameAcceptedPacket);
 		cout << "User joined: " << userName << endl;
-		connectedUsers.push_back(userName);
+		User newUser(e->peer, userName);
+		connectedUsers.push_back(newUser);
 
 		string userJoinMessage = "mUser joined: " + userName;
 		ENetPacket* joinMessagePacket = enet_packet_create(userJoinMessage.c_str(),
@@ -99,11 +102,11 @@ void ChatServer::HandleWhoPacket(ENetEvent* e)
 	cout << "User list requested" << endl;
 	string response = "mConnected users: ";
 	
-	for (string user : connectedUsers)
+	for (User u: connectedUsers)
 	{
-		response += (user);
+		response += (u.GetName());
 		
-		if (user != connectedUsers.back())
+		if (u.GetName() != connectedUsers.back().GetName())
 			response += ", ";
 	}
 
@@ -116,13 +119,26 @@ void ChatServer::HandleWhoPacket(ENetEvent* e)
 
 void ChatServer::HandleDisconnect(ENetEvent* e)
 {
-	cout << (char*)(e->peer->data) << " disconnected. " << endl;
-	e->peer->data = NULL;
+	vector<User>::iterator disconnectingUser = GetUserFromPeer(e->peer);
+	cout << disconnectingUser->GetName() << " disconnected. " << endl;
+	connectedUsers.erase(disconnectingUser);
+}
+
+vector<User>::iterator ChatServer::GetUserFromPeer(ENetPeer* p)
+{
+	for (vector<User>::iterator it=connectedUsers.begin(); it < connectedUsers.end(); it++)
+		if (it->GetPeer() == p)
+			return it;
 }
 
 bool ChatServer::IsNameTaken(string name)
 {
-	return std::find(connectedUsers.begin(), connectedUsers.end(), name)!= connectedUsers.end();
+	for (User u : connectedUsers)
+	{
+		if (u.GetName() == name)
+			return true;
+	}
+	return false;
 }
 
 void ChatServer::RunServer()

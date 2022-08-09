@@ -13,8 +13,9 @@ using std::thread;
 
 void ChatClient::DrawScreen()
 {
-	int chatLogSize = chatLog.size();
+	int chatLogSize = 0;
 	bool drawing = true;
+	
 	while (drawing)
 	{
 		if (chatLogSize != chatLog.size())
@@ -34,8 +35,6 @@ void ChatClient::DrawScreen()
 		}
 	}
 }
-
-
 
 void ChatClient::KbListen()
 {
@@ -173,6 +172,7 @@ void ChatClient::SendWhisperPacket(string receiver, string whisperMsg)
 	int size = 1 + 1 + strlen(receiver.c_str()) + strlen(whisperMsg.c_str()) + 1 + 1;
 	char* data = new char[size];
 	char* dataInsert = data;
+
 	*dataInsert = 'W'; dataInsert++;
 	*dataInsert = strlen(receiver.c_str()); dataInsert++;
 	strcpy_s(dataInsert, (data + size) - dataInsert, receiver.c_str()); dataInsert += strlen(receiver.c_str());

@@ -17,7 +17,7 @@ int main()
 	cout << "Server or client?" << endl <<
 		"1. server " << endl <<
 		"2. client" << endl <<
-		"Selection (1,2,3): ";
+		"Selection (1,2): ";
 	getline(cin, userInput);
 	int num = int(userInput[0]-'0');
 

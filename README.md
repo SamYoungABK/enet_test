@@ -8,5 +8,4 @@ Clients can pick a name, and messages they input will be sent to all clients con
 /who - Gets a list of connected users on the server
 
 ## To-Do List
-* Create user object.
 * Disconnect users automatically after a certain timeout

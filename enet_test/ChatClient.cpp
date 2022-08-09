@@ -164,7 +164,7 @@ void ChatClient::SendWhoPacket()
 }
 
 // packet structure
-//   opCode(char) + receiverNameSize(char) + '\0' + receiverName(char*[receiverNameSize]) + '\0'
+//   opCode(char) + receiverNameSize(char) + receiverName(char*[receiverNameSize]) + '\0'
 //    + whisperMsg (char*[until '\0'] + '\0'
 // TODO: Probably refactor this? 
 
